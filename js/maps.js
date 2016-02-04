@@ -33,8 +33,16 @@ var places = [{
 var ViewModel = function () {
 	var self = this;
 	self.places = ko.observableArray(places);
-	self.markers = ko.observableArray([]);
-	self.search = ko.observable("")
+	self.spots = ko.observableArray();
+	self.markers = ko.observableArray();
+	self.search = ko.observable("");
+	self.displayContent = ko.computed(function() {
+		return $.grep(self.spots(), function(element) {
+			var regex = new RegExp(self.search());
+			return element.spot_name.match(regex);
+		})
+	});
+
 
 	//Initialize map
 	self.initMap = function () {
@@ -48,12 +56,13 @@ var ViewModel = function () {
 			zoom: 12
 		});
 	}
+
 	self.setMarkers = function (place) {
-		for (var i = 0; i < places.length; i++) {
+		for (var i = 0; i < place.length; i++) {
 			var mark = new google.maps.Marker({
-				position: place[i].position,
+				position: {lat: place[i].latitude, lng: place[i].longitude},
 				map: self.map,
-				title: place[i].title
+				title: place[i].spot_name
 			});
 			self.markers.push(mark);
 			mark.addListener('click', function () {
@@ -65,15 +74,22 @@ var ViewModel = function () {
 				}
 			});
 		}
-
-
 	};
+
+
+
 	self.initMap();
-	self.setMarkers(places);
+	$.get("http://api.spitcast.com/api/county/spots/san-diego/", function(data, status) {
+		if (status == "success"){
+			self.spots(data);
+			self.setMarkers(data)
+			console.log(self.displayContent())
+		}
+	})
+	//self.setMarkers(places);
 
 	//list and search bar
 	self.searchContent = ko.observable("");
-	self.listContent = ko.observableArray();
 
 };
 

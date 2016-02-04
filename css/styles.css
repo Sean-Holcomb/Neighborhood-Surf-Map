@@ -52,6 +52,7 @@ ul {
 #list {
     height: 100%;
     width: 20%;
+    overflow: auto;
     order: 1;
     background-color: #026E9D;
 }
