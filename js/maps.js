@@ -39,14 +39,18 @@ var ViewModel = function () {
 				title: place[i].spot_name
 			});
 			self.markers.push(mark);
-			mark.addListener('click', function () {
-				marker = mark;
-				if (marker.getAnimation() !== null) {
-					marker.setAnimation(null);
-				} else {
+			(function(marker) {
+				mark.addListener('click', function () {
 					marker.setAnimation(google.maps.Animation.BOUNCE);
-				}
-			});
+					setTimeout(
+						function() {
+							marker.setAnimation(null);
+						},
+						738
+					);
+
+				});
+			}(mark));
 		}
 	};
 
