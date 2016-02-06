@@ -15,11 +15,11 @@
                 <input data-bind="value: search" />
             </div>
             <ul data-bind="foreach: displayContent">
-                <li data-bind="text: spot_name">
+                <li data-bind="text: spot_name, click: function(data, event) { $parent.listClick(spot_name, data, event) }">
             </ul>
         </div>
         <div id="mapDiv">
-          <div id="map"></div>
+            <div id="map"></div>
         </div>
     </div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALUnKuXI_rU6WHjdQLTdwHqmT8V1R2rwA">
