@@ -9,6 +9,7 @@ var ViewModel = function () {
 	self.spots = ko.observableArray();
 	self.markers = ko.observableArray();
 	self.search = ko.observable("");
+	self.infowindow = new google.maps.InfoWindow({ content: ""});
 	//Knockout computed for dispayed view items
 	self.displayContent = ko.computed(function () {
 		//filter all spots using using grep and the search term
@@ -38,7 +39,7 @@ var ViewModel = function () {
 				lat: 32.9550,
 				lng: -117.2639
 			},
-			zoom: 12
+			zoom: 10
 		});
 	}
 	//Create an Array of marker objects
@@ -55,59 +56,60 @@ var ViewModel = function () {
 			});
 			//add marker to array
 			self.markers.push(mark);
-			//function to animate marker and give details about spot
-			(function (marker, id) {
-				mark.addListener('click', function () {
-					//Animate and stop animation
-					marker.setAnimation(google.maps.Animation.BOUNCE);
-					setTimeout(
-						function () {
-							marker.setAnimation(null);
-						},
-						738  //Time for one bounce
-					);
-					//Send API call for details on spot
-					//return function sets inforwindow on
-					var apiString = "http://api.spitcast.com/api/spot/forecast/" + id + "/";
-					$.get(apiString, function (data, status){
-						if (status == "success") {
-							self.infowindow = new google.maps.InfoWindow({
-								content: '<div id="content">'+
-								'<div id="siteNotice">'+
-								'</div>'+
-								'<h1 id="firstHeading" class="firstHeading">' +
-								data[0].spot_name +
-								'</h1>'+
-								'<div id="bodyContent">'+
-								'<p>Date: ' +
-								data[0].date +
-								'</p>'+
-								'<p>Size: ' +
-								data[0].size +
-								'ft</p>'+
-								'<p>Conditions: ' +
-								data[0].shape_full +
-								'</p>'+
-								'</div>'+
-								'</div>'
-							});
-							self.infowindow.open(self.map, marker);
-						}
-					});
+			mark.id = place[i].spot_id
+			mark.clickOn = function (){
+				var it = this;
 
+				it.setAnimation(google.maps.Animation.BOUNCE);
+				setTimeout(
+					function () {
+						it.setAnimation(null);
+					},
+					738  //Time for one bounce
+				);
+				//Send API call for details on spot
+				//return function sets inforwindow on
+				var apiString = "http://api.spitcast.com/api/spot/forecast/" + it.id + "/";
+				$.get(apiString, function (data, status){
+					if (status == "success") {
+						self.infowindow.close();
+						self.infowindow = new google.maps.InfoWindow({
+							content: '<div id="content">'+
+							'<div id="siteNotice">'+
+							'</div>'+
+							'<h1 id="firstHeading" class="firstHeading">' +
+							data[0].spot_name +
+							'</h1>'+
+							'<div id="bodyContent">'+
+							'<p>Date: ' +
+							data[0].date +
+							'</p>'+
+							'<p>Size: ' +
+							data[0].size +
+							'ft</p>'+
+							'<p>Conditions: ' +
+							data[0].shape_full +
+							'</p>'+
+							'</div>'+
+							'</div>'
+						});
+						self.infowindow.open(self.map, it);
+					}else{
+						alert("Could not load surf spot data");
+					}
 				});
-			//call method with current marker and spot id
-			}(mark, place[i].spot_id));
+			}
+			mark.addListener('click', function(){this.clickOn();});
 		}
 	};
 
+
 	//List item click trigger corresponding marker click
 	self.listClick = function(name) {
-		console.log("clicking")
 		var len = self.markers().length;
 		for (var i = 0; i < len; i++) {
 			if (self.markers()[i].title == name){
-				$(self.markers()[i]).trigger("click");
+				self.markers()[i].clickOn();
 				break;
 			}
 		}
@@ -119,7 +121,8 @@ var ViewModel = function () {
 			if (status == "success") {
 				self.setMarkers(data);
 				self.spots(data);
-
+			}else {
+				alert("Could not load spot locations")
 			}
 		})
 };
