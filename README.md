@@ -1,6 +1,8 @@
 # Neighborhood Surf Map
 Project 5 for Udacity Front-End Nanodegree. This application uses the KnockoutJS framework along with the Google Maps and Spitcast APIs to display a map of surfspots across San Diego and display current surf data about the spots.
 
+<a href='http://www.spitcast.com/api/docs/'>Spitcast API</a>
+
 ## How to Use
 1. Download repository.
 2. Open Index.html in your browser.
