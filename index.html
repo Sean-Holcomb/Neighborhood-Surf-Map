@@ -12,7 +12,7 @@
     <div class="container">
         <div id="list">
             <div id="search">
-                <input data-bind="value: search" />
+                <input data-bind="textInput: search" placeholder="Search"/>
             </div>
             <ul data-bind="foreach: displayContent">
                 <li data-bind="text: spot_name, click: function(data, event) { $parent.listClick(spot_name, data, event) }">

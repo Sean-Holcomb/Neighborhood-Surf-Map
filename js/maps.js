@@ -16,7 +16,7 @@ var ViewModel = function () {
 	self.displayContent = ko.computed(function () {
 		//filter all spots using using grep and the search term
 		return $.grep(self.spots(), function (element, index) {
-			var regex = new RegExp(self.search());
+			var regex = new RegExp(self.search(), "i");
 			var result = element.spot_name.match(regex);
 			//if element passes filter then the corresponding marker is shown
 			if (result) {
@@ -43,27 +43,38 @@ var ViewModel = function () {
 			},
 			zoom: 10
 		});
+		self.setMarkers();
 	};
 	//Create an Array of marker objects
-	self.setMarkers = function (place) {
-		for (var i = 0; i < place.length; i++) {
-			//Place the marker objects at each surf spot returned from api call
-			var mark = new google.maps.Marker({
-				position: {
-					lat: place[i].latitude,
-					lng: place[i].longitude
-				},
-				map: self.map,
-				title: place[i].spot_name
+	self.setMarkers = function () {
+		$.get("http://api.spitcast.com/api/county/spots/san-diego/", function (data, status) {
+				if (status == "success") {
+					for (var i = 0; i < data.length; i++) {
+						//Place the marker objects at each surf spot returned from api call
+						var mark = new google.maps.Marker({
+							position: {
+								lat: data[i].latitude,
+								lng: data[i].longitude
+							},
+							map: self.map,
+							title: data[i].spot_name
+						});
+						//add marker to array
+						self.markers.push(mark);
+						mark.id = data[i].spot_id;
+						mark.addListener('click', function () {
+							self.markerClick(this);
+						});
+					}
+					self.spots(data);
+				}
+			})
+			.fail(function () {
+				alert("Could not load spot locations");
 			});
-			//add marker to array
-			self.markers.push(mark);
-			mark.id = place[i].spot_id;
-			mark.addListener('click', function () {
-				self.markerClick(this);
-			});
-		}
 	};
+
+
 	//Marker click to load spot info
 	self.markerClick = function (marker) {
 		marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -77,33 +88,34 @@ var ViewModel = function () {
 		//return function sets inforwindow on
 		var apiString = "http://api.spitcast.com/api/spot/forecast/" + marker.id + "/";
 		$.get(apiString, function (data, status) {
-			if (status == "success") {
-				self.infowindow.close();
-				self.infowindow = new google.maps.InfoWindow({
-					content: '<div id="content">' +
-						'<div id="siteNotice">' +
-						'</div>' +
-						'<h1 id="firstHeading" class="firstHeading">' +
-						data[0].spot_name +
-						'</h1>' +
-						'<div id="bodyContent">' +
-						'<p>Date: ' +
-						data[0].date +
-						'</p>' +
-						'<p>Size: ' +
-						data[0].size +
-						'ft</p>' +
-						'<p>Conditions: ' +
-						data[0].shape_full +
-						'</p>' +
-						'</div>' +
-						'</div>'
-				});
-				self.infowindow.open(self.map, marker);
-			} else {
+				if (status == "success") {
+					self.infowindow.close();
+					self.infowindow = new google.maps.InfoWindow({
+						content: '<div id="content">' +
+							'<div id="siteNotice">' +
+							'</div>' +
+							'<h1 id="firstHeading" class="firstHeading">' +
+							data[0].spot_name +
+							'</h1>' +
+							'<div id="bodyContent">' +
+							'<p>Date: ' +
+							data[0].date +
+							'</p>' +
+							'<p>Size: ' +
+							data[0].size +
+							'ft</p>' +
+							'<p>Conditions: ' +
+							data[0].shape_full +
+							'</p>' +
+							'</div>' +
+							'</div>'
+					});
+					self.infowindow.open(self.map, marker);
+				}
+			})
+			.fail(function () {
 				alert("Could not load surf spot data");
-			}
-		});
+			});
 	};
 
 
@@ -121,15 +133,8 @@ var ViewModel = function () {
 
 	//Initialize map and make API call for location data
 	self.initMap();
-	$.get("http://api.spitcast.com/api/county/spots/san-diego/", function (data, status) {
-		if (status == "success") {
-			self.setMarkers(data);
-			self.spots(data);
-		} else {
-			alert("Could not load spot locations");
-		}
-	});
-};
+
+}
 
 //Make and bind ViewModel
 ko.applyBindings(new ViewModel());
