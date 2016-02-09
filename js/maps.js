@@ -9,9 +9,7 @@ var ViewModel = function () {
 	self.spots = ko.observableArray();
 	self.markers = ko.observableArray();
 	self.search = ko.observable("");
-	self.infowindow = new google.maps.InfoWindow({
-		content: ""
-	});
+
 	//Knockout computed for dispayed view items
 	self.displayContent = ko.computed(function () {
 		//filter all spots using using grep and the search term
@@ -43,11 +41,14 @@ var ViewModel = function () {
 			},
 			zoom: 10
 		});
+		self.infowindow = new google.maps.InfoWindow({
+			content: ""
+		});
 		self.setMarkers();
 	};
 	//Create an Array of marker objects
 	self.setMarkers = function () {
-		$.get("http://api.spitcast.com/api/county/spots/san-diego/", function (data, status) {
+		$.get("http://api.spitcast.com/api/county/spots/san-diego/", function(data, status) {
 				if (status == "success") {
 					for (var i = 0; i < data.length; i++) {
 						//Place the marker objects at each surf spot returned from api call
@@ -130,11 +131,13 @@ var ViewModel = function () {
 			}
 		}
 	};
-
-	//Initialize map and make API call for location data
-	self.initMap();
-
 }
 
+
 //Make and bind ViewModel
-ko.applyBindings(new ViewModel());
+var viewModel = new ViewModel();
+ko.applyBindings(viewModel);
+
+function googleError() {
+	alert("Could not load Google Map.");
+}
