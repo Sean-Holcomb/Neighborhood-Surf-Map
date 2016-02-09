@@ -29,17 +29,12 @@ var ViewModel = function () {
 
 	//Initialize map
 	self.initMap = function () {
-		//Letting the google map know the size of its window so it displays properly
-		self.DOMmap = document.getElementById('map');
-		self.DOMmap.style.height = document.getElementById('mapDiv')
-			.clientHeight + 'px';
 		//Map object centered on San Diego County
-		self.map = new google.maps.Map(self.DOMmap, {
+		self.map = new google.maps.Map(document.getElementById('map'), {
 			center: {
 				lat: 32.9550,
 				lng: -117.2639
-			},
-			zoom: 10
+			}
 		});
 		self.infowindow = new google.maps.InfoWindow({
 			content: ""
@@ -48,18 +43,19 @@ var ViewModel = function () {
 	};
 	//Create an Array of marker objects
 	self.setMarkers = function () {
-		$.get("http://api.spitcast.com/api/county/spots/san-diego/", function(data, status) {
+		$.get("http://api.spitcast.com/api/county/spots/san-diego/", function (data, status) {
 				if (status == "success") {
+					self.bounds = new google.maps.LatLngBounds();
 					for (var i = 0; i < data.length; i++) {
 						//Place the marker objects at each surf spot returned from api call
+						var latLng = new google.maps.LatLng(data[i].latitude, data[i].longitude);
 						var mark = new google.maps.Marker({
-							position: {
-								lat: data[i].latitude,
-								lng: data[i].longitude
-							},
+							position: latLng,
 							map: self.map,
 							title: data[i].spot_name
 						});
+						//add spots coordinates to bounds of map
+						self.bounds.extend(latLng);
 						//add marker to array
 						self.markers.push(mark);
 						mark.id = data[i].spot_id;
@@ -67,6 +63,8 @@ var ViewModel = function () {
 							self.markerClick(this);
 						});
 					}
+					//apply bounds to map
+					self.map.fitBounds(self.bounds)
 					self.spots(data);
 				}
 			})

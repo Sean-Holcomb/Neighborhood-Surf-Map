@@ -36,16 +36,14 @@ ul {
 }
 
 #map {
-    height:100%;
-    overflow: visible;
-    flex-shrink: 2;
+    flex: 1;
+    width: 80%;
+    order: 2;
 
 }
 
 #mapDiv {
-	flex: 1;
-	width: 80%;
-	order: 2;
+
 }
 
 
