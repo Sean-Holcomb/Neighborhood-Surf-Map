@@ -9,16 +9,20 @@
 </head>
 
 <body>
-    <div class="container">
-        <div id="list">
-            <div id="search">
-                <input data-bind="textInput: search" placeholder="Search" />
-            </div>
-            <ul data-bind="foreach: displayContent">
-                <li data-bind="text: spot_name, click: function(data, event) { $parent.listClick(spot_name, data, event) }">
-            </ul>
+    <div class="container" >
+        <div id="bar" data-bind="click: toggleMenu">
+            <h2>Menu</h2>
         </div>
-            <div id="map"></div>
+        <div id="map"></div>
+
+    </div>
+    <div id="list" data-bind="visible: menuToggle">
+        <div id="search">
+            <input data-bind="textInput: search" placeholder="Search" />
+        </div>
+        <ul data-bind="foreach: displayContent">
+            <li data-bind="text: spot_name, click: $parent.listClick">
+        </ul>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script type="text/javascript" src="js/knockout-3.4.0.js"></script>
